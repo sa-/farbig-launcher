@@ -14,6 +14,7 @@ export component AppWindow inherits Window {
 
     in property <[App]> apps;
     in-out property <int> selected-app: 0;
+    in-out property <length> app-scroll-x: 0px;
     in-out property <bool> showing-quit-confirmation: false;
     in-out property <bool> quit-confirmed: true;
 
@@ -39,7 +40,8 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = true;
                 } else {
-                    root.selected-app = 0;
+                    root.selected-app = Math.max(root.selected-app - 1, 0);
+                    root.app-scroll-x = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
                 }
             }
         }
@@ -50,7 +52,8 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = true;
                 } else {
-                    root.selected-app = 0;
+                    root.selected-app = Math.max(root.selected-app - 1, 0);
+                    root.app-scroll-x = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
                 }
             }
         }
@@ -62,6 +65,7 @@ export component AppWindow inherits Window {
                     root.quit-confirmed = false;
                 } else {
                     root.selected-app = Math.min(root.selected-app + 1, root.apps.length - 1);
+                    root.app-scroll-x = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
                 }
             }
         }
@@ -73,6 +77,7 @@ export component AppWindow inherits Window {
                     root.quit-confirmed = false;
                 } else {
                     root.selected-app = Math.min(root.selected-app + 1, root.apps.length - 1);
+                    root.app-scroll-x = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
                 }
             }
         }
@@ -125,7 +130,15 @@ export component AppWindow inherits Window {
                     font-weight: 700;
                 }
 
-                HorizontalLayout {
+                app-list := Flickable {
+                    height: 240px;
+                    content-x <=> root.app-scroll-x;
+                    content-width: root.apps.length * 324px - 24px;
+                    content-height: 240px;
+
+                    HorizontalLayout {
+                    width: root.apps.length * 324px - 24px;
+                    height: 240px;
                     spacing: 24px;
 
                     for app[index] in root.apps : Rectangle {
@@ -164,6 +177,7 @@ export component AppWindow inherits Window {
                             root.selected-app = index;
                             root.launch-app(app.path);
                         }
+                    }
                     }
                     }
                 }
