@@ -1,6 +1,7 @@
 export struct App {
     name: string,
     path: string,
+    icon: image,
 }
 
 export component AppWindow inherits Window {
@@ -181,6 +182,12 @@ export component AppWindow inherits Window {
                             text: (index + 1 < 10 ? "0" : "") + (index + 1);
                             color: index == 0 ? #b9ecff : #f0cbff;
                             font-size: 18px;
+                        }
+
+                        Image {
+                            source: app.icon;
+                            height: 112px;
+                            image-fit: contain;
                         }
 
                         Text {
