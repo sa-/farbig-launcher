@@ -13,10 +13,21 @@ export component AppWindow inherits Window {
     callback quit();
 
     in property <[App]> apps;
-    in-out property <int> selected-app: 0;
+    in-out property <int> selected-app: -1;
     in-out property <length> app-scroll-x: 0px;
     in-out property <bool> showing-quit-confirmation: false;
     in-out property <bool> quit-confirmed: true;
+    private property <bool> pending-keyboard-scroll: false;
+    private property <length> keyboard-scroll-target: 0px;
+
+    changed app-scroll-x => {
+        if (root.pending-keyboard-scroll && root.app-scroll-x == root.keyboard-scroll-target) {
+            root.pending-keyboard-scroll = false;
+        } else {
+            root.pending-keyboard-scroll = false;
+            root.selected-app = -1;
+        }
+    }
 
     scope := FocusScope {
         KeyBinding {
@@ -28,7 +39,7 @@ export component AppWindow inherits Window {
                     } else {
                         root.showing-quit-confirmation = false;
                     }
-                } else {
+                } else if (root.selected-app >= 0) {
                     root.launch-app(root.apps[root.selected-app].path);
                 }
             }
@@ -39,9 +50,11 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = true;
-                } else {
-                    root.selected-app = Math.max(root.selected-app - 1, 0);
-                    root.app-scroll-x = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
+                } else if (root.apps.length > 0) {
+                    root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.ceil((-root.app-scroll-x + app-list.width) / 324px) - 1) : Math.max(root.selected-app - 1, 0);
+                    root.keyboard-scroll-target = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
+                    root.pending-keyboard-scroll = true;
+                    root.app-scroll-x = root.keyboard-scroll-target;
                 }
             }
         }
@@ -51,9 +64,11 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = true;
-                } else {
-                    root.selected-app = Math.max(root.selected-app - 1, 0);
-                    root.app-scroll-x = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
+                } else if (root.apps.length > 0) {
+                    root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.ceil((-root.app-scroll-x + app-list.width) / 324px) - 1) : Math.max(root.selected-app - 1, 0);
+                    root.keyboard-scroll-target = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
+                    root.pending-keyboard-scroll = true;
+                    root.app-scroll-x = root.keyboard-scroll-target;
                 }
             }
         }
@@ -63,9 +78,11 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = false;
-                } else {
-                    root.selected-app = Math.min(root.selected-app + 1, root.apps.length - 1);
-                    root.app-scroll-x = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
+                } else if (root.apps.length > 0) {
+                    root.selected-app = root.selected-app < 0 ? Math.max(0, Math.floor(-root.app-scroll-x / 324px)) : Math.min(root.selected-app + 1, root.apps.length - 1);
+                    root.keyboard-scroll-target = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
+                    root.pending-keyboard-scroll = true;
+                    root.app-scroll-x = root.keyboard-scroll-target;
                 }
             }
         }
@@ -75,9 +92,11 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = false;
-                } else {
-                    root.selected-app = Math.min(root.selected-app + 1, root.apps.length - 1);
-                    root.app-scroll-x = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
+                } else if (root.apps.length > 0) {
+                    root.selected-app = root.selected-app < 0 ? Math.max(0, Math.floor(-root.app-scroll-x / 324px)) : Math.min(root.selected-app + 1, root.apps.length - 1);
+                    root.keyboard-scroll-target = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
+                    root.pending-keyboard-scroll = true;
+                    root.app-scroll-x = root.keyboard-scroll-target;
                 }
             }
         }
