@@ -15,14 +15,18 @@ export component AppWindow inherits Window {
 
     in property <[App]> apps;
     in-out property <int> selected-app: -1;
-    in-out property <length> app-scroll-x: 0px;
+    in-out property <length> app-scroll-y: 0px;
     in-out property <bool> showing-quit-confirmation: false;
     in-out property <bool> quit-confirmed: true;
     private property <bool> pending-keyboard-scroll: false;
     private property <length> keyboard-scroll-target: 0px;
+    private property <int> grid-columns: 4;
+    private property <length> app-width: 300px;
+    private property <length> app-height: 240px;
+    private property <length> app-gap: 24px;
 
-    changed app-scroll-x => {
-        if (root.pending-keyboard-scroll && root.app-scroll-x == root.keyboard-scroll-target) {
+    changed app-scroll-y => {
+        if (root.pending-keyboard-scroll && root.app-scroll-y == root.keyboard-scroll-target) {
             root.pending-keyboard-scroll = false;
         } else {
             root.pending-keyboard-scroll = false;
@@ -52,10 +56,7 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = true;
                 } else if (root.apps.length > 0) {
-                    root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.ceil((-root.app-scroll-x + app-list.width) / 324px) - 1) : Math.max(root.selected-app - 1, 0);
-                    root.keyboard-scroll-target = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
-                    root.pending-keyboard-scroll = true;
-                    root.app-scroll-x = root.keyboard-scroll-target;
+                    root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.floor(-root.app-scroll-y / (root.app-height + root.app-gap)) * root.grid-columns) : Math.max(root.selected-app - 1, root.selected-app - Math.mod(root.selected-app, root.grid-columns));
                 }
             }
         }
@@ -66,10 +67,10 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = true;
                 } else if (root.apps.length > 0) {
-                    root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.ceil((-root.app-scroll-x + app-list.width) / 324px) - 1) : Math.max(root.selected-app - 1, 0);
-                    root.keyboard-scroll-target = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
-                    root.pending-keyboard-scroll = true;
-                    root.app-scroll-x = root.keyboard-scroll-target;
+                    root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.floor(-root.app-scroll-y / (root.app-height + root.app-gap)) * root.grid-columns) : Math.max(root.selected-app - root.grid-columns, 0);
+                    root.keyboard-scroll-target = Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) < -root.app-scroll-y ? -Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) : Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) + root.app-height > -root.app-scroll-y + app-list.height ? -(Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) - (app-list.height - root.app-height)) : root.app-scroll-y;
+                    root.pending-keyboard-scroll = root.keyboard-scroll-target != root.app-scroll-y;
+                    root.app-scroll-y = root.keyboard-scroll-target;
                 }
             }
         }
@@ -80,10 +81,7 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = false;
                 } else if (root.apps.length > 0) {
-                    root.selected-app = root.selected-app < 0 ? Math.max(0, Math.floor(-root.app-scroll-x / 324px)) : Math.min(root.selected-app + 1, root.apps.length - 1);
-                    root.keyboard-scroll-target = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
-                    root.pending-keyboard-scroll = true;
-                    root.app-scroll-x = root.keyboard-scroll-target;
+                    root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.floor(-root.app-scroll-y / (root.app-height + root.app-gap)) * root.grid-columns) : Math.min(root.selected-app + 1, Math.min(root.apps.length - 1, root.selected-app - Math.mod(root.selected-app, root.grid-columns) + root.grid-columns - 1));
                 }
             }
         }
@@ -94,10 +92,10 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = false;
                 } else if (root.apps.length > 0) {
-                    root.selected-app = root.selected-app < 0 ? Math.max(0, Math.floor(-root.app-scroll-x / 324px)) : Math.min(root.selected-app + 1, root.apps.length - 1);
-                    root.keyboard-scroll-target = -Math.max(0px, root.selected-app * 324px - (app-list.width - 300px));
-                    root.pending-keyboard-scroll = true;
-                    root.app-scroll-x = root.keyboard-scroll-target;
+                    root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.floor(-root.app-scroll-y / (root.app-height + root.app-gap)) * root.grid-columns) : Math.min(root.selected-app + root.grid-columns, root.apps.length - 1);
+                    root.keyboard-scroll-target = Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) < -root.app-scroll-y ? -Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) : Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) + root.app-height > -root.app-scroll-y + app-list.height ? -(Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) - (app-list.height - root.app-height)) : root.app-scroll-y;
+                    root.pending-keyboard-scroll = root.keyboard-scroll-target != root.app-scroll-y;
+                    root.app-scroll-y = root.keyboard-scroll-target;
                 }
             }
         }
@@ -151,19 +149,20 @@ export component AppWindow inherits Window {
                 }
 
                 app-list := Flickable {
-                    height: 240px;
-                    content-x <=> root.app-scroll-x;
-                    content-width: root.apps.length * 324px - 24px;
-                    content-height: 240px;
+                    height: parent.height - 124px;
+                    content-y <=> root.app-scroll-y;
+                    content-width: self.width;
+                    content-height: Math.ceil(root.apps.length / root.grid-columns) * (root.app-height + root.app-gap) - root.app-gap;
 
-                    HorizontalLayout {
-                    width: root.apps.length * 324px - 24px;
-                    height: 240px;
-                    spacing: 24px;
+                    Rectangle {
+                    width: parent.width;
+                    height: Math.max(parent.height, app-list.content-height);
 
                     for app[index] in root.apps : Rectangle {
-                    width: 300px;
-                    height: 240px;
+                    x: (app-list.width - root.grid-columns * root.app-width - (root.grid-columns - 1) * root.app-gap) / 2 + Math.mod(index, root.grid-columns) * (root.app-width + root.app-gap);
+                    y: Math.floor(index / root.grid-columns) * (root.app-height + root.app-gap);
+                    width: root.app-width;
+                    height: root.app-height;
                     background: root.selected-app == index || app-touch.has-hover ? (index == 0 ? #1e5d7d : #754c83) : (index == 0 ? #164663 : #54375f);
                     border-radius: 8px;
                     border-width: root.selected-app == index ? 4px : 0px;
