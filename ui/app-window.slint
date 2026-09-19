@@ -142,7 +142,7 @@ export component AppWindow inherits Window {
                 }
 
                 Text {
-                    text: "Choose an app";
+                    text: root.selected-app >= 0 ? root.apps[root.selected-app].name : "Choose an app";
                     color: #f4f8ff;
                     font-size: 42px;
                     font-weight: 700;
@@ -192,8 +192,9 @@ export component AppWindow inherits Window {
                         Text {
                             text: app.name;
                             color: #ffffff;
-                            font-size: 30px;
-                            font-weight: 700;
+                            font-size: 25px;
+                            font-weight: 500;
+                            horizontal-alignment: center;
                         }
                     }
 
