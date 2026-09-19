@@ -1,7 +1,5 @@
 export component AppWindow inherits Window {
     title: "Farbig Launcher";
-    width: 1280px;
-    height: 720px;
     full-screen: true;
     background: #091428;
     forward-focus: scope;
@@ -11,13 +9,18 @@ export component AppWindow inherits Window {
 
     in-out property <int> selected-app: 0;
     in-out property <bool> showing-quit-confirmation: false;
+    in-out property <bool> quit-confirmed: true;
 
     scope := FocusScope {
         KeyBinding {
             keys: @keys(Return);
             activated => {
                 if (root.showing-quit-confirmation) {
+                    if (root.quit-confirmed) {
                         root.quit();
+                    } else {
+                        root.showing-quit-confirmation = false;
+                    }
                 } else {
                     root.launch-app(root.selected-app == 0 ? "App 1" : "App 2");
                 }
@@ -27,7 +30,9 @@ export component AppWindow inherits Window {
         KeyBinding {
             keys: @keys(LeftArrow);
             activated => {
-                if (!root.showing-quit-confirmation) {
+                if (root.showing-quit-confirmation) {
+                    root.quit-confirmed = true;
+                } else {
                     root.selected-app = 0;
                 }
             }
@@ -36,7 +41,9 @@ export component AppWindow inherits Window {
         KeyBinding {
             keys: @keys(UpArrow);
             activated => {
-                if (!root.showing-quit-confirmation) {
+                if (root.showing-quit-confirmation) {
+                    root.quit-confirmed = true;
+                } else {
                     root.selected-app = 0;
                 }
             }
@@ -45,7 +52,9 @@ export component AppWindow inherits Window {
         KeyBinding {
             keys: @keys(RightArrow);
             activated => {
-                if (!root.showing-quit-confirmation) {
+                if (root.showing-quit-confirmation) {
+                    root.quit-confirmed = false;
+                } else {
                     root.selected-app = 1;
                 }
             }
@@ -54,7 +63,9 @@ export component AppWindow inherits Window {
         KeyBinding {
             keys: @keys(DownArrow);
             activated => {
-                if (!root.showing-quit-confirmation) {
+                if (root.showing-quit-confirmation) {
+                    root.quit-confirmed = false;
+                } else {
                     root.selected-app = 1;
                 }
             }
@@ -66,6 +77,7 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.showing-quit-confirmation = false;
                 } else {
+                    root.quit-confirmed = true;
                     root.showing-quit-confirmation = true;
                 }
             }
@@ -77,6 +89,7 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.showing-quit-confirmation = false;
                 } else {
+                    root.quit-confirmed = true;
                     root.showing-quit-confirmation = true;
                 }
             }
@@ -188,7 +201,7 @@ export component AppWindow inherits Window {
             x: (parent.width - self.width) / 2;
             y: (parent.height - self.height) / 2;
             width: 480px;
-            height: 230px;
+            height: 270px;
             background: #14233b;
             border-radius: 8px;
             border-width: 1px;
@@ -211,10 +224,52 @@ export component AppWindow inherits Window {
                     font-size: 18px;
                 }
 
-                Text {
-                    text: "OK   Enter        Back   Escape";
-                    color: #71ddff;
-                    font-size: 16px;
+                HorizontalLayout {
+                    spacing: 16px;
+
+                    ok-button := Rectangle {
+                        width: 150px;
+                        height: 54px;
+                        background: root.quit-confirmed || ok-touch.has-hover ? #2cc9f0 : #1b6b85;
+                        border-radius: 6px;
+                        border-width: root.quit-confirmed ? 3px : 0px;
+                        border-color: #e1f9ff;
+
+                        Text {
+                            text: "OK";
+                            color: #031321;
+                            font-size: 18px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+
+                        ok-touch := TouchArea {
+                            clicked => { root.quit(); }
+                        }
+                    }
+
+                    back-button := Rectangle {
+                        width: 150px;
+                        height: 54px;
+                        background: !root.quit-confirmed || back-touch.has-hover ? #314963 : #22354b;
+                        border-radius: 6px;
+                        border-width: !root.quit-confirmed ? 3px : 0px;
+                        border-color: #e1f9ff;
+
+                        Text {
+                            text: "Back";
+                            color: #ffffff;
+                            font-size: 18px;
+                            font-weight: 700;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+
+                        back-touch := TouchArea {
+                            clicked => { root.showing-quit-confirmation = false; }
+                        }
+                    }
                 }
             }
         }
