@@ -1,17 +1,221 @@
-import { Button, VerticalBox } from "std-widgets.slint";
-
 export component AppWindow inherits Window {
-    in-out property <int> counter: 42;
-    callback request-increase-value();
-    VerticalBox {
-        Text {
-            text: "Counter: \{root.counter}";
+    title: "Farbig Launcher";
+    width: 1280px;
+    height: 720px;
+    full-screen: true;
+    background: #091428;
+    forward-focus: scope;
+
+    callback launch-app(string);
+    callback quit();
+
+    in-out property <int> selected-app: 0;
+    in-out property <bool> showing-quit-confirmation: false;
+
+    scope := FocusScope {
+        KeyBinding {
+            keys: @keys(Return);
+            activated => {
+                if (root.showing-quit-confirmation) {
+                        root.quit();
+                } else {
+                    root.launch-app(root.selected-app == 0 ? "App 1" : "App 2");
+                }
+            }
         }
 
-        Button {
-            text: "Increase value";
-            clicked => {
-                root.request-increase-value();
+        KeyBinding {
+            keys: @keys(LeftArrow);
+            activated => {
+                if (!root.showing-quit-confirmation) {
+                    root.selected-app = 0;
+                }
+            }
+        }
+
+        KeyBinding {
+            keys: @keys(UpArrow);
+            activated => {
+                if (!root.showing-quit-confirmation) {
+                    root.selected-app = 0;
+                }
+            }
+        }
+
+        KeyBinding {
+            keys: @keys(RightArrow);
+            activated => {
+                if (!root.showing-quit-confirmation) {
+                    root.selected-app = 1;
+                }
+            }
+        }
+
+        KeyBinding {
+            keys: @keys(DownArrow);
+            activated => {
+                if (!root.showing-quit-confirmation) {
+                    root.selected-app = 1;
+                }
+            }
+        }
+
+        KeyBinding {
+            keys: @keys(Escape);
+            activated => {
+                if (root.showing-quit-confirmation) {
+                    root.showing-quit-confirmation = false;
+                } else {
+                    root.showing-quit-confirmation = true;
+                }
+            }
+        }
+
+        KeyBinding {
+            keys: @keys(Backspace);
+            activated => {
+                if (root.showing-quit-confirmation) {
+                    root.showing-quit-confirmation = false;
+                } else {
+                    root.showing-quit-confirmation = true;
+                }
+            }
+        }
+
+        Rectangle {
+            background: #091428;
+
+            VerticalLayout {
+                padding-left: 72px;
+                padding-right: 72px;
+                padding-top: 64px;
+                padding-bottom: 64px;
+                spacing: 18px;
+
+                Text {
+                    text: "FARBIG";
+                    color: #71ddff;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+
+                Text {
+                    text: "Choose an app";
+                    color: #f4f8ff;
+                    font-size: 42px;
+                    font-weight: 700;
+                }
+
+                HorizontalLayout {
+                    spacing: 24px;
+
+                    app-one := Rectangle {
+                    width: 300px;
+                    height: 240px;
+                    background: root.selected-app == 0 || app-one-touch.has-hover ? #1e5d7d : #164663;
+                    border-radius: 8px;
+                    border-width: root.selected-app == 0 ? 4px : 0px;
+                    border-color: #d8f4ff;
+
+                    VerticalLayout {
+                        padding: 28px;
+                        alignment: space-between;
+
+                        Text {
+                            text: "01";
+                            color: #b9ecff;
+                            font-size: 18px;
+                        }
+
+                        Text {
+                            text: "App 1";
+                            color: #ffffff;
+                            font-size: 30px;
+                            font-weight: 700;
+                        }
+                    }
+
+                    app-one-touch := TouchArea {
+                        clicked => {
+                            root.selected-app = 0;
+                            root.launch-app("App 1");
+                        }
+                    }
+                    }
+
+                    app-two := Rectangle {
+                    width: 300px;
+                    height: 240px;
+                    background: root.selected-app == 1 || app-two-touch.has-hover ? #754c83 : #54375f;
+                    border-radius: 8px;
+                    border-width: root.selected-app == 1 ? 4px : 0px;
+                    border-color: #f7dfff;
+
+                    VerticalLayout {
+                        padding: 28px;
+                        alignment: space-between;
+
+                        Text {
+                            text: "02";
+                            color: #f0cbff;
+                            font-size: 18px;
+                        }
+
+                        Text {
+                            text: "App 2";
+                            color: #ffffff;
+                            font-size: 30px;
+                            font-weight: 700;
+                        }
+                    }
+
+                    app-two-touch := TouchArea {
+                        clicked => {
+                            root.selected-app = 1;
+                            root.launch-app("App 2");
+                        }
+                    }
+                    }
+                }
+            }
+        }
+    }
+
+    if root.showing-quit-confirmation : Rectangle {
+        background: #000000a8;
+
+        Rectangle {
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            width: 480px;
+            height: 230px;
+            background: #14233b;
+            border-radius: 8px;
+            border-width: 1px;
+            border-color: #58708f;
+
+            VerticalLayout {
+                padding: 28px;
+                spacing: 16px;
+
+                Text {
+                    text: "Quit Farbig?";
+                    color: #ffffff;
+                    font-size: 28px;
+                    font-weight: 700;
+                }
+
+                Text {
+                    text: "Press OK to quit, or Back to continue.";
+                    color: #c5d5e9;
+                    font-size: 18px;
+                }
+
+                Text {
+                    text: "OK   Enter        Back   Escape";
+                    color: #71ddff;
+                    font-size: 16px;
+                }
             }
         }
     }
