@@ -1,3 +1,7 @@
+export struct App {
+    name: string,
+}
+
 export component AppWindow inherits Window {
     title: "Farbig Launcher";
     full-screen: true;
@@ -7,6 +11,7 @@ export component AppWindow inherits Window {
     callback launch-app(string);
     callback quit();
 
+    in property <[App]> apps;
     in-out property <int> selected-app: 0;
     in-out property <bool> showing-quit-confirmation: false;
     in-out property <bool> quit-confirmed: true;
@@ -22,7 +27,7 @@ export component AppWindow inherits Window {
                         root.showing-quit-confirmation = false;
                     }
                 } else {
-                    root.launch-app(root.selected-app == 0 ? "App 1" : "App 2");
+                    root.launch-app(root.apps[root.selected-app].name);
                 }
             }
         }
@@ -55,7 +60,7 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = false;
                 } else {
-                    root.selected-app = 1;
+                    root.selected-app = Math.min(root.selected-app + 1, root.apps.length - 1);
                 }
             }
         }
@@ -66,7 +71,7 @@ export component AppWindow inherits Window {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = false;
                 } else {
-                    root.selected-app = 1;
+                    root.selected-app = Math.min(root.selected-app + 1, root.apps.length - 1);
                 }
             }
         }
@@ -122,70 +127,41 @@ export component AppWindow inherits Window {
                 HorizontalLayout {
                     spacing: 24px;
 
-                    app-one := Rectangle {
+                    for app[index] in root.apps : Rectangle {
                     width: 300px;
                     height: 240px;
-                    background: root.selected-app == 0 || app-one-touch.has-hover ? #1e5d7d : #164663;
+                    background: root.selected-app == index || app-touch.has-hover ? (index == 0 ? #1e5d7d : #754c83) : (index == 0 ? #164663 : #54375f);
                     border-radius: 8px;
-                    border-width: root.selected-app == 0 ? 4px : 0px;
+                    border-width: root.selected-app == index ? 4px : 0px;
                     border-color: #d8f4ff;
 
-                    VerticalLayout {
-                        padding: 28px;
-                        alignment: space-between;
-
-                        Text {
-                            text: "01";
-                            color: #b9ecff;
-                            font-size: 18px;
-                        }
-
-                        Text {
-                            text: "App 1";
-                            color: #ffffff;
-                            font-size: 30px;
-                            font-weight: 700;
-                        }
+                    animate background, border-width {
+                        duration: 160ms;
+                        easing: ease-in-out;
                     }
-
-                    app-one-touch := TouchArea {
-                        clicked => {
-                            root.selected-app = 0;
-                            root.launch-app("App 1");
-                        }
-                    }
-                    }
-
-                    app-two := Rectangle {
-                    width: 300px;
-                    height: 240px;
-                    background: root.selected-app == 1 || app-two-touch.has-hover ? #754c83 : #54375f;
-                    border-radius: 8px;
-                    border-width: root.selected-app == 1 ? 4px : 0px;
-                    border-color: #f7dfff;
 
                     VerticalLayout {
                         padding: 28px;
                         alignment: space-between;
 
                         Text {
-                            text: "02";
-                            color: #f0cbff;
+                            text: (index + 1 < 10 ? "0" : "") + (index + 1);
+                            color: index == 0 ? #b9ecff : #f0cbff;
                             font-size: 18px;
                         }
 
                         Text {
-                            text: "App 2";
+                            text: app.name;
                             color: #ffffff;
                             font-size: 30px;
                             font-weight: 700;
                         }
                     }
 
-                    app-two-touch := TouchArea {
+                    app-touch := TouchArea {
                         clicked => {
-                            root.selected-app = 1;
-                            root.launch-app("App 2");
+                            root.selected-app = index;
+                            root.launch-app(app.name);
                         }
                     }
                     }

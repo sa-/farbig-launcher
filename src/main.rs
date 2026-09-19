@@ -4,10 +4,24 @@
 use std::error::Error;
 use std::process::Command;
 
+use slint::{ModelRc, SharedString, VecModel};
+
 slint::include_modules!();
+
+fn apps() -> Vec<App> {
+    vec![
+        App {
+            name: SharedString::from("App 1"),
+        },
+        App {
+            name: SharedString::from("App 2"),
+        },
+    ]
+}
 
 fn main() -> Result<(), Box<dyn Error>> {
     let ui = AppWindow::new()?;
+    ui.set_apps(ModelRc::new(VecModel::from(apps())));
 
     ui.on_launch_app(move |app_name| {
         let script = format!("display dialog \"{}\"", app_name.replace('"', "\\\""));
