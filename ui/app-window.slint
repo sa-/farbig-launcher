@@ -1,5 +1,6 @@
 export struct App {
     name: string,
+    path: string,
 }
 
 export component AppWindow inherits Window {
@@ -27,7 +28,7 @@ export component AppWindow inherits Window {
                         root.showing-quit-confirmation = false;
                     }
                 } else {
-                    root.launch-app(root.apps[root.selected-app].name);
+                    root.launch-app(root.apps[root.selected-app].path);
                 }
             }
         }
@@ -161,7 +162,7 @@ export component AppWindow inherits Window {
                     app-touch := TouchArea {
                         clicked => {
                             root.selected-app = index;
-                            root.launch-app(app.name);
+                            root.launch-app(app.path);
                         }
                     }
                     }
