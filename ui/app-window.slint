@@ -163,41 +163,42 @@ export component AppWindow inherits Window {
                     y: Math.floor(index / root.grid-columns) * (root.app-height + root.app-gap);
                     width: root.app-width;
                     height: root.app-height;
-                    background: root.selected-app == index || app-touch.has-hover ? (index == 0 ? #1e5d7d : #754c83) : (index == 0 ? #164663 : #54375f);
-                    border-radius: 8px;
-                    border-width: root.selected-app == index ? 4px : 0px;
-                    border-color: #d8f4ff;
+                    background: transparent;
 
-                    animate background, border-width {
+                    Rectangle {
+                        x: (parent.width - self.width) / 2;
+                        y: 20px;
+                        width: 128px;
+                        height: 128px;
+                        background: transparent;
+                        border-radius: 8px;
+                        border-width: root.selected-app == index || app-touch.has-hover ? 4px : 0px;
+                        border-color: #d8f4ff;
+
+                        animate border-width {
                         duration: 160ms;
                         easing: ease-in-out;
-                    }
-
-                    VerticalLayout {
-                        padding: 28px;
-                        alignment: space-between;
-
-                        Text {
-                            text: (index + 1 < 10 ? "0" : "") + (index + 1);
-                            color: index == 0 ? #b9ecff : #f0cbff;
-                            font-size: 18px;
                         }
 
                         Image {
                             source: app.icon;
-                            height: 112px;
+                            width: parent.width - 16px;
+                            height: parent.height - 16px;
+                            x: 8px;
+                            y: 8px;
                             image-fit: contain;
-                        }
-
-                        Text {
-                            text: app.name;
-                            color: #ffffff;
-                            font-size: 25px;
-                            font-weight: 500;
-                            horizontal-alignment: center;
                         }
                     }
 
+                    Text {
+                        y: 170px;
+                        width: parent.width;
+                        text: app.name;
+                        color: #ffffff;
+                        font-size: 25px;
+                        font-weight: 500;
+                        horizontal-alignment: center;
+                    }
                     app-touch := TouchArea {
                         clicked => {
                             root.selected-app = index;
