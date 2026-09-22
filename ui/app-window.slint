@@ -25,11 +25,17 @@ export component AppWindow inherits Window {
     private property <length> app-height: 240px;
     private property <length> app-gap: 24px;
 
+    animate app-scroll-y {
+        duration: root.pending-keyboard-scroll ? 150ms : 0ms;
+        easing: ease-out-quint;
+    }
+
     changed app-scroll-y => {
-        if (root.pending-keyboard-scroll && root.app-scroll-y == root.keyboard-scroll-target) {
-            root.pending-keyboard-scroll = false;
+        if (root.pending-keyboard-scroll) {
+            if (root.app-scroll-y == root.keyboard-scroll-target) {
+                root.pending-keyboard-scroll = false;
+            }
         } else {
-            root.pending-keyboard-scroll = false;
             root.selected-app = -1;
         }
     }
