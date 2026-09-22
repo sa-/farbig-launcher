@@ -18,6 +18,8 @@ export component AppWindow inherits Window {
     in-out property <length> app-scroll-y: 0px;
     in-out property <bool> showing-quit-confirmation: false;
     in-out property <bool> quit-confirmed: true;
+    in-out property <bool> showing-launch-message: false;
+    in-out property <string> launching-app-name: "";
     private property <bool> pending-keyboard-scroll: false;
     private property <length> keyboard-scroll-target: 0px;
     private property <int> grid-columns: 4;
@@ -50,7 +52,9 @@ export component AppWindow inherits Window {
                     } else {
                         root.showing-quit-confirmation = false;
                     }
-                } else if (root.selected-app >= 0) {
+                } else if (!root.showing-launch-message && root.selected-app >= 0) {
+                    root.launching-app-name = root.apps[root.selected-app].name;
+                    root.showing-launch-message = true;
                     root.launch-app(root.apps[root.selected-app].path);
                 }
             }
@@ -61,7 +65,7 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = true;
-                } else if (root.apps.length > 0) {
+                } else if (!root.showing-launch-message && root.apps.length > 0) {
                     root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.floor(-root.app-scroll-y / (root.app-height + root.app-gap)) * root.grid-columns) : Math.max(root.selected-app - 1, root.selected-app - Math.mod(root.selected-app, root.grid-columns));
                 }
             }
@@ -72,7 +76,7 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = true;
-                } else if (root.apps.length > 0) {
+                } else if (!root.showing-launch-message && root.apps.length > 0) {
                     root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.floor(-root.app-scroll-y / (root.app-height + root.app-gap)) * root.grid-columns) : Math.max(root.selected-app - root.grid-columns, 0);
                     root.keyboard-scroll-target = Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) < -root.app-scroll-y ? -Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) : Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) + root.app-height > -root.app-scroll-y + app-list.height ? -(Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) - (app-list.height - root.app-height)) : root.app-scroll-y;
                     root.pending-keyboard-scroll = root.keyboard-scroll-target != root.app-scroll-y;
@@ -86,7 +90,7 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = false;
-                } else if (root.apps.length > 0) {
+                } else if (!root.showing-launch-message && root.apps.length > 0) {
                     root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.floor(-root.app-scroll-y / (root.app-height + root.app-gap)) * root.grid-columns) : Math.min(root.selected-app + 1, Math.min(root.apps.length - 1, root.selected-app - Math.mod(root.selected-app, root.grid-columns) + root.grid-columns - 1));
                 }
             }
@@ -97,7 +101,7 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.quit-confirmed = false;
-                } else if (root.apps.length > 0) {
+                } else if (!root.showing-launch-message && root.apps.length > 0) {
                     root.selected-app = root.selected-app < 0 ? Math.min(root.apps.length - 1, Math.floor(-root.app-scroll-y / (root.app-height + root.app-gap)) * root.grid-columns) : Math.min(root.selected-app + root.grid-columns, root.apps.length - 1);
                     root.keyboard-scroll-target = Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) < -root.app-scroll-y ? -Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) : Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) + root.app-height > -root.app-scroll-y + app-list.height ? -(Math.floor(root.selected-app / root.grid-columns) * (root.app-height + root.app-gap) - (app-list.height - root.app-height)) : root.app-scroll-y;
                     root.pending-keyboard-scroll = root.keyboard-scroll-target != root.app-scroll-y;
@@ -111,7 +115,7 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.showing-quit-confirmation = false;
-                } else {
+                } else if (!root.showing-launch-message) {
                     root.quit-confirmed = true;
                     root.showing-quit-confirmation = true;
                 }
@@ -123,7 +127,7 @@ export component AppWindow inherits Window {
             activated => {
                 if (root.showing-quit-confirmation) {
                     root.showing-quit-confirmation = false;
-                } else {
+                } else if (!root.showing-launch-message) {
                     root.quit-confirmed = true;
                     root.showing-quit-confirmation = true;
                 }
@@ -207,8 +211,12 @@ export component AppWindow inherits Window {
                     }
                     app-touch := TouchArea {
                         clicked => {
-                            root.selected-app = index;
-                            root.launch-app(app.path);
+                            if (!root.showing-launch-message) {
+                                root.selected-app = index;
+                                root.launching-app-name = app.name;
+                                root.showing-launch-message = true;
+                                root.launch-app(app.path);
+                            }
                         }
                     }
                     }
@@ -294,6 +302,45 @@ export component AppWindow inherits Window {
                             clicked => { root.showing-quit-confirmation = false; }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    if root.showing-launch-message : Rectangle {
+        background: #000000a8;
+
+        TouchArea {}
+
+        Rectangle {
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            width: Math.min(520px, parent.width - 48px);
+            height: 230px;
+            background: #14233b;
+            border-radius: 8px;
+            border-width: 1px;
+            border-color: #58708f;
+
+            VerticalLayout {
+                padding: 28px;
+                spacing: 16px;
+                alignment: center;
+
+                Text {
+                    text: "Launching";
+                    color: #c5d5e9;
+                    font-size: 24px;
+                    horizontal-alignment: center;
+                }
+
+                Text {
+                    text: root.launching-app-name;
+                    color: #ffffff;
+                    font-size: 30px;
+                    font-weight: 700;
+                    horizontal-alignment: center;
+                    wrap: word-wrap;
                 }
             }
         }

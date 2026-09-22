@@ -4,6 +4,7 @@
 use std::error::Error;
 use std::fs;
 use std::process::{Command, Stdio};
+use std::time::Duration;
 
 use slint::{Image, ModelRc, SharedString, VecModel};
 
@@ -90,10 +91,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ui = AppWindow::new()?;
     ui.set_apps(ModelRc::new(VecModel::from(apps()?)));
 
+    let launch_handle = ui.as_weak();
     ui.on_launch_app(move |app_path| {
         if let Err(error) = Command::new("open").arg(app_path.as_str()).spawn() {
             eprintln!("Could not launch {app_path}: {error}");
         }
+        let launch_handle = launch_handle.clone();
+        slint::Timer::single_shot(Duration::from_secs(4), move || {
+            let Some(ui) = launch_handle.upgrade() else {
+                return;
+            };
+            ui.set_showing_launch_message(false);
+        });
     });
 
     let ui_handle = ui.as_weak();
