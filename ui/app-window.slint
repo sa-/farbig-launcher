@@ -159,7 +159,6 @@ export component AppWindow inherits Window {
                 }
 
                 app-list := Flickable {
-                    height: parent.height - 124px;
                     content-y <=> root.app-scroll-y;
                     content-width: self.width;
                     content-height: Math.ceil(root.apps.length / root.grid-columns) * (root.app-height + root.app-gap) - root.app-gap;
